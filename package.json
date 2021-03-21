@@ -15,7 +15,7 @@
     "start": "echo The app is starting! It will automatically open in your browser when ready && env-cmd -f ./neardev/dev-account.env parcel src/index.html --open",
     "dev": "nodemon --watch contract -e ts --exec \"npm run start\"",
     "test": "npm run build:contract:debug && cd contract && npm run test && cd .. && jest test --runInBand",
-    "test:nft": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\", \"resolveJsonModule\": true}' mocha --timeout 15000 -r ts-node/register 'tests/**/*.ts'"
+    "test:nft": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\", \"resolveJsonModule\": true}' mocha --timeout 15000 -r ts-node/register 'tests/*.ts'"
   },
   "devDependencies": {
     "@babel/core": "~7.13.1",

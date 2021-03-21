@@ -14,6 +14,8 @@
 .cache
 /contract/node_modules/
 /contract/build/
+/contract-nft/node_modules/
+/contract-nft/build/
 
 # testing
 /coverage
