@@ -18,14 +18,19 @@ export function setGreeting(message: string): void {
 }
 
 @nearBindgen
-class CallNftArgs {
+class GetOwnerArgs {
   token_id: string
+}
+
+@nearBindgen
+class OnGotOwnerArgs {
+  itemAddedRequestId: string
 }
 
 export function getOwner(): void {
   logging.log('Got gas' + context.prepaidGas.toString())
 
-  let itemArgs: CallNftArgs = {
+  let itemArgs: GetOwnerArgs = {
     token_id: '1'
   }
   let promise = ContractPromise.create(
@@ -35,30 +40,23 @@ export function getOwner(): void {
     3000000000000
   )
 
-
-  promise.returnAsResult()
+  let requestArgs: OnGotOwnerArgs = {
+    itemAddedRequestId: "UNIQUE_REQUEST_ID",
+  }
+  let callbackPromise = promise.then(
+    context.contractName,
+    "_onItemAdded",
+    requestArgs.encode(),
+    3000000000000
+  )
+  callbackPromise.returnAsResult();
 }
 
-// 0 gas error: Error: {"index":0,"kind":{"index":0,"kind":{"NewReceiptValidationError":{"ActionsValidation":"FunctionCallZeroAttachedGas"}}}}
-// high gas error: Exceeded the prepaid gas
+export function _onItemAdded(itemAddedRequestId: string): void {
+  // Get all results
+  let results = ContractPromise.getResults()
+  let addItemResult = results[0]
 
-// @nearBindgen
-// class CallNearArgs {
-//   accountId: string
-//   itemId: string
-// }
+  logging.log('Encoded owner name' + addItemResult.buffer.toString())
+}
 
-// export function callMetaNear(): void {
-
-//   let itemArgs: CallNearArgs = {
-//     accountId: "alice.near",
-//     itemId: "Sword +9000",
-//   }
-//   let promise = ContractPromise.create(
-//     "metanear",
-//     "addItem",
-//     itemArgs,
-//     1000,
-//   )
-//   promise.returnAsResult()
-// }
