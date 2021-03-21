@@ -22,6 +22,11 @@ export async function initContract() {
     // Change methods can modify the state. But you don't receive the returned value when called.
     changeMethods: ['setGreeting'],
   })
+
+  window.nftContract = await new Contract(window.walletConnection.account(), 'dev-1616323404800-5884526', {
+    viewMethods: ['get_token_owner'],
+    changeMethods: ['mint_to', 'transfer'],
+  })
 }
 
 export function logout() {

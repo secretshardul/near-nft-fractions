@@ -7,7 +7,9 @@ import getConfig from './config'
 const { networkId } = getConfig(process.env.NODE_ENV || 'development')
 
 export default function App() {
-  // use React Hooks to store greeting in component state
+  const [ownedNft, setOwnedNft] = React.useState()
+  const [currentOwner, setCurrentOwner] = React.useState()
+
   const [greeting, setGreeting] = React.useState()
 
   // when the user has not yet interacted with the form, disable the button
@@ -24,10 +26,14 @@ export default function App() {
       if (window.walletConnection.isSignedIn()) {
 
         // window.contract is set by initContract in index.js
-        window.contract.getGreeting({ accountId: window.accountId })
-          .then(greetingFromContract => {
-            setGreeting(greetingFromContract)
-          })
+        // window.contract.getGreeting({ accountId: window.accountId })
+        //   .then(greetingFromContract => {
+        //     setGreeting(greetingFromContract)
+        //   })
+
+        console.log('Getting owned tokens')
+        getOwnedToken()
+
       }
     },
 
@@ -36,6 +42,52 @@ export default function App() {
     // This works because signing into NEAR Wallet reloads the page
     []
   )
+
+  async function getOwnedToken() {
+    for(let i=1; i<100; i++) {
+      const tokenOwner = await getTokenOwner(i)
+      // const tokenOwner = await window.nftContract.get_token_owner({
+      //   token_id: i.toString()
+      // })
+      console.log('Owner of token', i, tokenOwner)
+
+      if(tokenOwner === window.accountId) {
+        await setOwnedNft(i)
+        await updateOwner(i)
+        break
+      }
+    }
+  }
+
+  async function mintToken() {
+    const tokenId = await window.nftContract.mint_to({
+      owner_id: window.accountId
+    })
+    window.localStorage.setItem('tokenId', tokenId)
+    console.log('Mint NFT ID', tokenId)
+  }
+
+  async function getTokenOwner(token_index) {
+    return await window.nftContract.get_token_owner({
+      token_id: token_index.toString()
+    })
+  }
+
+  async function updateOwner(token_index) {
+    const owner = await getTokenOwner(token_index)
+    setCurrentOwner(owner)
+  }
+
+  async function getFractionBalance() {
+    // TODO get fraction balance
+  }
+
+  async function transferToken() {
+    await window.nftContract.transfer({
+      new_owner_id: 'dev-1616327378138-9838690',
+      token_id: 7
+    })
+  }
 
   // if not signed in, return early with sign-in prompt
   if (!window.walletConnection.isSignedIn()) {
@@ -152,22 +204,18 @@ export default function App() {
             </div>
           </fieldset>
         </form>
-        <p>
-          Look at that! A Hello World app! This greeting is stored on the NEAR blockchain. Check it out:
-        </p>
-        <ol>
-          <li>
-            Look in <code>src/App.js</code> and <code>src/utils.js</code> – you'll see <code>getGreeting</code> and <code>setGreeting</code> being called on <code>contract</code>. What's this?
-          </li>
-          <li>
-            Ultimately, this <code>contract</code> code is defined in <code>assembly/main.ts</code> – this is the source code for your <a target="_blank" rel="noreferrer" href="https://docs.near.org/docs/roles/developer/contracts/intro">smart contract</a>.</li>
-          <li>
-            When you run <code>yarn dev</code>, the code in <code>assembly/main.ts</code> gets deployed to the NEAR testnet. You can see how this happens by looking in <code>package.json</code> at the <code>scripts</code> section to find the <code>dev</code> command.</li>
-        </ol>
-        <hr />
-        <p>
-          To keep learning, check out <a target="_blank" rel="noreferrer" href="https://docs.near.org">the NEAR docs</a> or look through some <a target="_blank" rel="noreferrer" href="https://examples.near.org">example apps</a>.
-        </p>
+        <h2>1. Lets get an NFT</h2>
+        <button onClick={mintToken}>Mint NFT</button>
+        <p>Token ID: {ownedNft}</p>
+        <p>Token owner: {currentOwner}</p>
+        <br />
+        <h2>2. Transfer NFT to fraction contract</h2>
+        <button onClick={transferToken}>Transfer</button>
+        <br />
+        <h2>3. Time to fractionalize</h2>
+        <button>Fractionalize</button>
+        <p>Fraction balance: 100</p>
+        <br />
       </main>
       {showNotification && <Notification />}
     </>
