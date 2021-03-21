@@ -1,4 +1,4 @@
-import { Context, logging, storage, ContractPromise, context } from 'near-sdk-as'
+import { Context, logging, storage, ContractPromise, context, ContractPromiseResult } from 'near-sdk-as'
 
 const DEFAULT_MESSAGE = 'Hello'
 
@@ -45,18 +45,47 @@ export function getOwner(): void {
   }
   let callbackPromise = promise.then(
     context.contractName,
-    "_onItemAdded",
+    "_onGotOwner",
     requestArgs.encode(),
     3000000000000
   )
   callbackPromise.returnAsResult();
 }
 
-export function _onItemAdded(itemAddedRequestId: string): void {
-  // Get all results
+export function fractionalize(contract: string, token_id: string): void {
+  // Check if current contract is owner
+  let itemArgs: GetOwnerArgs = {
+    token_id
+  }
+
+  let promise = ContractPromise.create(
+    contract,
+    "get_token_owner",
+    itemArgs.encode(),
+    3000000000000
+  )
+
+  let requestArgs: OnGotOwnerArgs = {
+    itemAddedRequestId: "UNIQUE_REQUEST_ID",
+  }
+  let callbackPromise = promise.then(
+    context.contractName,
+    "_onGotOwner",
+    requestArgs.encode(),
+    3000000000000
+  )
+  callbackPromise.returnAsResult();
+}
+
+export function _onGotOwner(itemAddedRequestId: string): void {
   let results = ContractPromise.getResults()
   let addItemResult = results[0]
 
-  logging.log('Encoded owner name' + addItemResult.buffer.toString())
-}
+  // Check if this contract is owner of NFT
+  let decodedName = decode<string>(addItemResult.buffer)
+  logging.log('Decoded name ' + decodedName)
 
+  assert(decodedName == context.contractName, "Contract does not own the token")
+
+  // Issue NFTs
+}
