@@ -8,7 +8,12 @@ class GetOwnerArgs {
 @nearBindgen
 class OnGotOwnerArgs {
   itemAddedRequestId: string
+  nft_contract: string
+  token_id: string
+  sender: string
 }
+
+const nft_fraction_balances = new PersistentMap<string, Map<string, u64>>("c:")
 
 const balances = new PersistentMap<string, u64>("b:")
 const approves = new PersistentMap<string, u64>("a:")
@@ -91,6 +96,9 @@ export function fractionalize(nft_contract: string, token_id: string): void {
 
   let requestArgs: OnGotOwnerArgs = {
     itemAddedRequestId: "UNIQUE_REQUEST_ID",
+    nft_contract,
+    token_id,
+    sender: context.sender
   }
   let callbackPromise = promise.then(
     context.contractName,
@@ -101,7 +109,7 @@ export function fractionalize(nft_contract: string, token_id: string): void {
   callbackPromise.returnAsResult()
 }
 
-export function _onGotOwner(itemAddedRequestId: string): void {
+export function _onGotOwner(itemAddedRequestId: string, nft_contract: string, token_id: string, sender: string): void {
   let results = ContractPromise.getResults()
   let addItemResult = results[0]
 
@@ -111,5 +119,10 @@ export function _onGotOwner(itemAddedRequestId: string): void {
 
   assert(decodedName == context.contractName, "Contract does not own the token")
   // Issue NFTs
-  logging.log('Minting tokens')
+  logging.log('Minting tokens for NFT ID' + token_id)
+
+  let balanceMap = new Map<string, u64>()
+  balanceMap.set(sender, 100)
+
+  nft_fraction_balances.set(token_id, balanceMap)
 }
