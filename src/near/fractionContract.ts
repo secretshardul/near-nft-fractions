@@ -3,18 +3,18 @@ const {
     Near, Contract, KeyPair,
     keyStores: { InMemoryKeyStore },
 } = nearAPI
-import * as credentials from './dev-1616323404800-5884526.json'
+import * as credentials from './dev-1616323509474-4777844.json'
 
 const networkId = 'default'
 const contractName = credentials.account_id
 const nodeUrl = 'https://rpc.testnet.near.org'
 
-export interface NftContract extends nearAPI.Contract {
-    get_token_owner: Function,
-    mint_to: Function,
+export interface FractionContract extends nearAPI.Contract {
+    getOwner: Function,
+    callMetaNear: Function,
 }
 
-export default async function getNftContract () {
+export default async function getFractionContract() {
     // Initialize Near
     const keyStore = new InMemoryKeyStore()
     await keyStore.setKey(networkId, contractName, KeyPair.fromString(credentials.private_key))
@@ -29,7 +29,7 @@ export default async function getNftContract () {
 
     // Initialize contract
     return new Contract(account, contractName, {
-        viewMethods: ['get_token_owner'],
-        changeMethods: ['mint_to'],
-    }) as NftContract
+        viewMethods: [],
+        changeMethods: ['getOwner', 'callMetaNear']
+    }) as FractionContract
 }

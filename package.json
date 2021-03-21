@@ -6,6 +6,7 @@
     "build": "npm run build:contract && npm run build:web",
     "build:contract": "node contract/compile.js",
     "build:contract:debug": "node contract/compile.js --debug",
+    "build:contract-nft:debug": "node contract-nft/compile.js --debug",
     "build:web": "parcel build src/index.html --public-url ./",
     "dev:deploy:contract": "near dev-deploy",
     "deploy:contract": "near deploy",
@@ -15,7 +16,8 @@
     "start": "echo The app is starting! It will automatically open in your browser when ready && env-cmd -f ./neardev/dev-account.env parcel src/index.html --open",
     "dev": "nodemon --watch contract -e ts --exec \"npm run start\"",
     "test": "npm run build:contract:debug && cd contract && npm run test && cd .. && jest test --runInBand",
-    "test:nft": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\", \"resolveJsonModule\": true}' mocha --timeout 15000 -r ts-node/register 'tests/*.ts'"
+    "test:nft": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\", \"resolveJsonModule\": true}' mocha --timeout 15000 -r ts-node/register 'tests/*.ts'",
+    "test-contract": "npm run build:contract:debug && near dev-deploy && npm run test:nft"
   },
   "devDependencies": {
     "@babel/core": "~7.13.1",
