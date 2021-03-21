@@ -3,7 +3,7 @@ const {
     Near, Contract, KeyPair,
     keyStores: { InMemoryKeyStore },
 } = nearAPI
-import * as credentials from './dev-1616323509474-4777844.json'
+import * as credentials from './dev-1616327378138-9838690.json'
 
 const networkId = 'default'
 const contractName = credentials.account_id
@@ -11,7 +11,7 @@ const nodeUrl = 'https://rpc.testnet.near.org'
 
 export interface FractionContract extends nearAPI.Contract {
     getOwner: Function,
-    callMetaNear: Function,
+    // callMetaNear: Function,
 }
 
 export default async function getFractionContract() {
@@ -30,6 +30,6 @@ export default async function getFractionContract() {
     // Initialize contract
     return new Contract(account, contractName, {
         viewMethods: [],
-        changeMethods: ['getOwner', 'callMetaNear']
+        changeMethods: ['getOwner']
     }) as FractionContract
 }

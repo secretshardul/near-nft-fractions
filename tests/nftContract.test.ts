@@ -13,13 +13,13 @@ describe('Contract test', async () => {
     //     assert(true)
     // })
 
-    // it('Get NFT owner', async () => {
-    //     const contract = await getNftContract()
-    //     const getOwnerResp = await contract.get_token_owner({
-    //         token_id: '1'
-    //     })
-    //     console.log('Get owner response', getOwnerResp)
+    it('Get NFT owner', async () => {
+        const contract = await getNftContract()
+        const getOwnerResp = await contract.get_token_owner({
+            token_id: '1'
+        })
+        console.log('Get owner response', getOwnerResp)
 
-    //     assert(true)
-    // })
+        assert(true)
+    })
 })

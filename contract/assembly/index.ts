@@ -1,4 +1,4 @@
-import { Context, logging, storage, ContractPromise } from 'near-sdk-as'
+import { Context, logging, storage, ContractPromise, context } from 'near-sdk-as'
 
 const DEFAULT_MESSAGE = 'Hello'
 
@@ -23,16 +23,18 @@ class CallNftArgs {
 }
 
 export function getOwner(): void {
+  logging.log('Got gas' + context.prepaidGas.toString())
+
   let itemArgs: CallNftArgs = {
     token_id: '1'
   }
   let promise = ContractPromise.create(
-    "dev-1616311842543-1234040",
+    "dev-1616323404800-5884526",
     "get_token_owner",
     itemArgs.encode(),
-    // 0,
-    1000000000000000
+    3000000000000
   )
+
 
   promise.returnAsResult()
 }
