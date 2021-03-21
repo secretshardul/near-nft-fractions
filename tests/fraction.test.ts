@@ -3,10 +3,13 @@ import getFractionContract from '../src/near/fractionContract'
 
 describe('Fraction contract test', async () => {
 
-    it('Get NFT owner from caller contract', async () => {
+    it('Fractionalize', async () => {
         const contract = await getFractionContract()
-        const getOwnerResp = await contract.getOwner({})
-        console.log('Get owner response from caller contract', getOwnerResp)
+        const fractionalizeResp = await contract.fractionalize({
+            nft_contract: 'dev-1616323404800-5884526',
+            token_id: '6'
+        })
+        console.log('Fractionalize response', fractionalizeResp)
 
         assert(true)
     })

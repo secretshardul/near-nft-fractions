@@ -1,21 +1,4 @@
-import { Context, logging, storage, ContractPromise, context, ContractPromiseResult } from 'near-sdk-as'
-
-const DEFAULT_MESSAGE = 'Hello'
-
-
-export function getGreeting(accountId: string): string | null {
-  return storage.get<string>(accountId, DEFAULT_MESSAGE)
-}
-
-export function setGreeting(message: string): void {
-  const account_id = Context.sender
-
-  logging.log(
-    'Saving greeting "' + message + '" for account "' + account_id + '"'
-  )
-
-  storage.set(account_id, message)
-}
+import { Context, logging, storage, ContractPromise, context, ContractPromiseResult, PersistentMap } from 'near-sdk-as'
 
 @nearBindgen
 class GetOwnerArgs {
@@ -27,39 +10,80 @@ class OnGotOwnerArgs {
   itemAddedRequestId: string
 }
 
-export function getOwner(): void {
-  logging.log('Got gas' + context.prepaidGas.toString())
+const balances = new PersistentMap<string, u64>("b:")
+const approves = new PersistentMap<string, u64>("a:")
 
-  let itemArgs: GetOwnerArgs = {
-    token_id: '1'
-  }
-  let promise = ContractPromise.create(
-    "dev-1616323404800-5884526",
-    "get_token_owner",
-    itemArgs.encode(),
-    3000000000000
-  )
+const TOTAL_SUPPLY: u64 = 1000000
 
-  let requestArgs: OnGotOwnerArgs = {
-    itemAddedRequestId: "UNIQUE_REQUEST_ID",
-  }
-  let callbackPromise = promise.then(
-    context.contractName,
-    "_onGotOwner",
-    requestArgs.encode(),
-    3000000000000
-  )
-  callbackPromise.returnAsResult();
+export function init(initialOwner: string): void {
+  logging.log("initialOwner: " + initialOwner)
+  assert(storage.get<string>("init") == null, "Already initialized token supply")
+  balances.set(initialOwner, TOTAL_SUPPLY)
+  storage.set("init", "done")
 }
 
-export function fractionalize(contract: string, token_id: string): void {
+export function totalSupply(): string {
+  return TOTAL_SUPPLY.toString()
+}
+
+export function balanceOf(tokenOwner: string): u64 {
+  logging.log("balanceOf: " + tokenOwner)
+  if (!balances.contains(tokenOwner)) {
+    return 0
+  }
+  const result = balances.getSome(tokenOwner)
+  return result
+}
+
+export function allowance(tokenOwner: string, spender: string): u64 {
+  const key = tokenOwner + ":" + spender
+  if (!approves.contains(key)) {
+    return 0
+  }
+  return approves.getSome(key)
+}
+
+export function transfer(to: string, tokens: u64): boolean {
+  logging.log("transfer from: " + context.sender + " to: " + to + " tokens: " + tokens.toString())
+  const fromAmount = getBalance(context.sender)
+  assert(fromAmount >= tokens, "not enough tokens on account")
+  assert(getBalance(to) <= getBalance(to) + tokens, "overflow at the receiver side")
+  balances.set(context.sender, fromAmount - tokens)
+  balances.set(to, getBalance(to) + tokens)
+  return true
+}
+
+export function approve(spender: string, tokens: u64): boolean {
+  logging.log("approve: " + spender + " tokens: " + tokens.toString())
+  approves.set(context.sender + ":" + spender, tokens)
+  return true
+}
+
+export function transferFrom(from: string, to: string, tokens: u64): boolean {
+  const fromAmount = getBalance(from)
+  assert(fromAmount >= tokens, "not enough tokens on account")
+  const approvedAmount = allowance(from, to)
+  assert(tokens <= approvedAmount, "not enough tokens approved to transfer")
+  assert(getBalance(to) <= getBalance(to) + tokens, "overflow at the receiver side")
+  balances.set(from, fromAmount - tokens)
+  balances.set(to, getBalance(to) + tokens)
+  return true
+}
+
+function getBalance(owner: string): u64 {
+  return balances.contains(owner) ? balances.getSome(owner) : 0
+}
+
+/** Fractionalization */
+
+export function fractionalize(nft_contract: string, token_id: string): void {
   // Check if current contract is owner
   let itemArgs: GetOwnerArgs = {
     token_id
   }
 
   let promise = ContractPromise.create(
-    contract,
+    nft_contract,
     "get_token_owner",
     itemArgs.encode(),
     3000000000000
@@ -74,7 +98,7 @@ export function fractionalize(contract: string, token_id: string): void {
     requestArgs.encode(),
     3000000000000
   )
-  callbackPromise.returnAsResult();
+  callbackPromise.returnAsResult()
 }
 
 export function _onGotOwner(itemAddedRequestId: string): void {
@@ -86,6 +110,6 @@ export function _onGotOwner(itemAddedRequestId: string): void {
   logging.log('Decoded name ' + decodedName)
 
   assert(decodedName == context.contractName, "Contract does not own the token")
-
   // Issue NFTs
+  logging.log('Minting tokens')
 }

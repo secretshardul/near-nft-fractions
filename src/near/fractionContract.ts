@@ -10,8 +10,7 @@ const contractName = credentials.account_id
 const nodeUrl = 'https://rpc.testnet.near.org'
 
 export interface FractionContract extends nearAPI.Contract {
-    getOwner: Function,
-    // callMetaNear: Function,
+    fractionalize: Function,
 }
 
 export default async function getFractionContract() {
@@ -30,6 +29,6 @@ export default async function getFractionContract() {
     // Initialize contract
     return new Contract(account, contractName, {
         viewMethods: [],
-        changeMethods: ['getOwner']
+        changeMethods: ['fractionalize']
     }) as FractionContract
 }
