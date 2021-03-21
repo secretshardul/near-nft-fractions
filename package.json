@@ -14,22 +14,27 @@
     "prestart": "npm run build:contract:debug && npm run dev:deploy:contract",
     "start": "echo The app is starting! It will automatically open in your browser when ready && env-cmd -f ./neardev/dev-account.env parcel src/index.html --open",
     "dev": "nodemon --watch contract -e ts --exec \"npm run start\"",
-    "test": "npm run build:contract:debug && cd contract && npm run test && cd .. && jest test --runInBand"
+    "test": "npm run build:contract:debug && cd contract && npm run test && cd .. && jest test --runInBand",
+    "test:nft": "env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\", \"resolveJsonModule\": true}' mocha --timeout 15000 -r ts-node/register 'tests/**/*.ts'"
   },
   "devDependencies": {
     "@babel/core": "~7.13.1",
     "@babel/preset-env": "~7.13.5",
     "@babel/preset-react": "~7.12.5",
+    "@types/mocha": "^8.2.2",
     "babel-jest": "~26.6.2",
     "env-cmd": "~10.1.0",
     "gh-pages": "~3.1.0",
     "jest": "~26.6.2",
     "jest-environment-node": "~26.6.2",
+    "mocha": "^8.3.2",
     "near-cli": "~1.5.3",
     "nodemon": "~2.0.3",
     "parcel-bundler": "~1.12.4",
     "react-test-renderer": "~17.0.1",
-    "shelljs": "~0.8.4"
+    "shelljs": "~0.8.4",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.3"
   },
   "dependencies": {
     "near-api-js": "~0.36.3",
