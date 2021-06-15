@@ -1,5 +1,7 @@
 # NFT fractionalization on Near
 
+**Note**: Complete program at https://github.com/secretshardul/fractose-contracts-v1.
+
 ## Core features
 - Fractionalization: Stake NFT and get fungible tokens representing its fractions. The following parameters will be set during fractionalization:
    1. Total fraction count
